@@ -1,0 +1,89 @@
+def display_board(board):
+    print(f"\n {board[0]} | {board[1]} | {board[2]} ")
+    print("---+---+---")
+    print(f" {board[3]} | {board[4]} | {board[5]} ")
+    print("---+---+---")
+    print(f" {board[6]} | {board[7]} | {board[8]} \n")
+
+def check_win(board, player):
+    win_conditions = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+    ]
+    for condition in win_conditions:
+        if board[condition[0]] == board[condition[1]] == board[condition[2]] == player:
+            return True
+    return False
+
+def is_full(board):
+    return ' ' not in board
+
+def tic_tac_toe():
+    board = [' '] * 9
+    print("BGCHINMAYI 1WA24CS078")
+    print("Tic-Tac-Toe! Positions are 0-8 (left-to-right, top-to-bottom)")
+   
+    while True:
+        display_board(board)
+       
+        while True:
+            try:
+                move = int(input("Select an empty cell (0-8): "))
+                if 0 <= move <= 8 and board[move] == ' ':
+                    board[move] = 'X'
+                    break
+                else:
+                    print("Invalid move. Cell is taken or out of range.")
+            except ValueError:
+                print("Please enter a valid number.")
+               
+        if check_win(board, 'X'):
+            display_board(board)
+            print("Human Wins")
+            break
+           
+        if is_full(board):
+            display_board(board)
+            print("Draw")
+            break
+           
+        print("Computer is making a move...")
+        moved = False
+       
+        for i in range(9):
+            if board[i] == ' ':
+                board[i] = 'O'
+                if check_win(board, 'O'):
+                    moved = True
+                    break
+                board[i] = ' '
+               
+        if not moved:
+            for i in range(9):
+                if board[i] == ' ':
+                    board[i] = 'X'
+                    if check_win(board, 'X'):
+                        board[i] = 'O'
+                        moved = True
+                        break
+                    board[i] = ' '
+                   
+        if not moved:
+            for i in range(9):
+                if board[i] == ' ':
+                    board[i] = 'O'
+                    break
+                   
+        if check_win(board, 'O'):
+            display_board(board)
+            print("Computer Wins")
+            break
+           
+        if is_full(board):
+            display_board(board)
+            print("Draw")
+            break
+
+if __name__ == "__main__":
+    tic_tac_toe()
