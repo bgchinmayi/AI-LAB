@@ -1,0 +1,19 @@
+def reflex_vacuum_agent(location, status):
+    if status == 'Dirty':
+        return 'Pick the Dirt'
+    elif location == 'A':
+        return 'Right'
+    elif location == 'B':
+        return 'Left'
+
+if __name__ == "__main__":
+    test_states = [
+        ('A', 'Dirty'),
+        ('A', 'Clean'),
+        ('B', 'Dirty'),
+        ('B', 'Clean')
+    ]
+    
+    for loc, stat in test_states:
+        action = reflex_vacuum_agent(loc, stat)
+        print(f"Location: {loc} | Status: {stat} ---> Action: {action}")
