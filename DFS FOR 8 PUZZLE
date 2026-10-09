@@ -1,0 +1,99 @@
+class EightPuzzleDFS:
+    def __init__(self, start, goal):
+        self.start = tuple(start)
+        self.goal = tuple(goal)
+
+        self.directions = {
+            'UP': (-1, 0),
+            'DOWN': (1, 0),
+            'LEFT': (0, -1),
+            'RIGHT': (0, 1)
+        }
+
+    def find_blank(self, state):
+        pos = state.index(0)
+        return pos // 3, pos % 3
+
+    def get_neighbors(self, state):
+        result = []
+        r, c = self.find_blank(state)
+
+        for direction, (dr, dc) in self.directions.items():
+            nr, nc = r + dr, c + dc
+
+            if 0 <= nr < 3 and 0 <= nc < 3:
+                board = list(state)
+                i = r * 3 + c
+                j = nr * 3 + nc
+
+                board[i], board[j] = board[j], board[i]
+                result.append((tuple(board), direction))
+
+        return result
+
+    def solve(self, max_depth=20):
+        visited = set()
+        path = []
+
+        def dfs(state, depth):
+            if state == self.goal:
+                return True
+
+            if depth == max_depth:
+                return False
+
+            visited.add(state)
+
+            for next_state, move in self.get_neighbors(state):
+                if next_state not in visited:
+                    path.append((move, next_state))
+
+                    if dfs(next_state, depth + 1):
+                        return True
+
+                    path.pop()
+
+            visited.remove(state)
+            return False
+
+        if dfs(self.start, 0):
+            return path
+        return None
+
+
+def display(state):
+    for i in range(0, 9, 3):
+        print(list(state[i:i + 3]))
+    print()
+
+
+# Initial and goal configurations
+initial_state = (
+    1, 2, 3,
+    0, 4, 6,
+    7, 5, 8
+)
+
+goal_state = (
+    1, 2, 3,
+    4, 5, 6,
+    7, 8, 0
+)
+
+print("Initial State:")
+display(initial_state)
+
+print("Goal State:")
+display(goal_state)
+
+puzzle = EightPuzzleDFS(initial_state, goal_state)
+solution = puzzle.solve(max_depth=20)
+
+if solution is not None:
+    print("Solution found in", len(solution), "steps!")
+
+    for step, (move, state) in enumerate(solution, 1):
+        print("Step", step, "- Move", move)
+        display(state)
+else:
+    print("No solution found within the depth limit.")
