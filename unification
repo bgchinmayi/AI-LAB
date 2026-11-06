@@ -1,13 +1,11 @@
 import re
 
-# Check whether a term is a variable
-# Convention: lowercase names without arguments are variables
+
 def is_variable(term):
     name, args = term
     return len(args) == 0 and name[0].islower()
 
 
-# Apply substitutions to a term
 def substitute(term, subs):
     name, args = term
 
@@ -17,7 +15,6 @@ def substitute(term, subs):
     return (name, tuple(substitute(arg, subs) for arg in args))
 
 
-# Check whether a variable occurs inside a term
 def occurs(variable, term, subs):
     term = substitute(term, subs)
 
@@ -28,9 +25,12 @@ def occurs(variable, term, subs):
                for arg in term[1])
 
 
-# Convert input expression into a tree
 def parse(expression):
     tokens = re.findall(r'[A-Za-z_]\w*|[(),]', expression)
+
+    if not tokens or ''.join(tokens).replace(' ', '') != re.sub(r'\s+', '', expression):
+        raise ValueError("Invalid expression")
+
     position = [0]
 
     def parse_term():
@@ -38,12 +38,18 @@ def parse(expression):
             raise ValueError("Invalid expression")
 
         name = tokens[position[0]]
-        position[0] += 1
 
+        if name in '(),':
+            raise ValueError("Invalid term")
+
+        position[0] += 1
         args = []
 
         if position[0] < len(tokens) and tokens[position[0]] == '(':
             position[0] += 1
+
+            if position[0] < len(tokens) and tokens[position[0]] == ')':
+                raise ValueError("Empty arguments")
 
             args.append(parse_term())
 
@@ -66,7 +72,6 @@ def parse(expression):
     return result
 
 
-# Convert a term back into readable expression
 def display(term):
     name, args = term
 
@@ -76,17 +81,14 @@ def display(term):
     return name + "(" + ", ".join(display(a) for a in args) + ")"
 
 
-# Main unification algorithm
 def unify(term1, term2, subs):
 
     term1 = substitute(term1, subs)
     term2 = substitute(term2, subs)
 
-    # Both terms are identical
     if term1 == term2:
         return True
 
-    # First term is a variable
     if is_variable(term1):
         variable = term1[0]
 
@@ -96,7 +98,6 @@ def unify(term1, term2, subs):
         subs[variable] = term2
         return True
 
-    # Second term is a variable
     if is_variable(term2):
         variable = term2[0]
 
@@ -106,14 +107,12 @@ def unify(term1, term2, subs):
         subs[variable] = term1
         return True
 
-    # Check predicate/function names and argument counts
     if term1[0] != term2[0]:
         return False
 
     if len(term1[1]) != len(term2[1]):
         return False
 
-    # Recursively unify corresponding arguments
     for a, b in zip(term1[1], term2[1]):
         if not unify(a, b, subs):
             return False
@@ -121,7 +120,6 @@ def unify(term1, term2, subs):
     return True
 
 
-# Main program
 def main():
 
     print("FIRST ORDER LOGIC - UNIFICATION")
@@ -142,14 +140,12 @@ def main():
         if unify(term1, term2, substitutions):
 
             print("\nUnification Successful!")
-
             print("\nMost General Unifier (MGU):")
 
             if substitutions:
                 for variable in sorted(substitutions):
                     value = substitute(
-                        substitutions[variable],
-                        substitutions
+                        substitutions[variable], substitutions
                     )
                     print(variable, "=", display(value))
             else:
@@ -162,9 +158,11 @@ def main():
             print("\nUnification Failed!")
             print("The expressions cannot be unified.")
 
-    except (ValueError, IndexError):
+    except (ValueError, IndexError, RecursionError):
         print("\nInvalid expression entered!")
 
 
 if __name__ == "__main__":
     main()
+
+print("BG CHINMAYI - 1WA24CS078")
