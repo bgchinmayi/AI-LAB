@@ -1,0 +1,84 @@
+
+# FORWARD CHAINING WITH PROOF
+
+facts = {
+    ("American", "Robert"),
+    ("Enemy", "A", "America"),
+    ("Owns", "A", "T1"),
+    ("Missile", "T1")
+}
+
+proof = {}
+
+def derive(fact, rule, premises, new_facts):
+    if fact not in facts and fact not in new_facts:
+        new_facts.add(fact)
+        proof[fact] = (rule, premises)
+        print(f"{rule}: {fact}")
+
+def forward_chaining():
+    while True:
+        new_facts = set()
+
+        # Rule 1: Missile(x) -> Weapon(x)
+        for f in facts:
+            if f[0] == "Missile":
+                derive(("Weapon", f[1]), "R1", [f], new_facts)
+
+        # Rule 2: Missile(x) AND Owns(A,x) -> Sells(Robert,x,A)
+        for f in facts:
+            if f[0] == "Missile":
+                x = f[1]
+                if ("Owns", "A", x) in facts:
+                    derive(("Sells", "Robert", x, "A"), "R2",
+                           [f, ("Owns", "A", x)], new_facts)
+
+        # Rule 3: Enemy(x,America) -> Hostile(x)
+        for f in facts:
+            if f[0] == "Enemy" and f[2] == "America":
+                derive(("Hostile", f[1]), "R3", [f], new_facts)
+
+        # Rule 4: American(p) AND Weapon(q) AND Sells(p,q,r)
+        #         AND Hostile(r) -> Criminal(p)
+        for a in facts:
+            if a[0] == "American":
+                for w in facts:
+                    if w[0] == "Weapon":
+                        for s in facts:
+                            if (s[0] == "Sells" and
+                                s[1] == a[1] and s[2] == w[1]):
+                                h = ("Hostile", s[3])
+                                if h in facts:
+                                    derive(("Criminal", a[1]), "R4",
+                                           [a, w, s, h], new_facts)
+
+        if not new_facts:
+            break
+
+        facts.update(new_facts)
+
+    return ("Criminal", "Robert") in facts
+
+
+def show_proof(goal, level=0):
+    print("  " * level + str(goal))
+
+    if goal in proof:
+        rule, premises = proof[goal]
+        print("  " * level + " <- " + rule)
+        for p in premises:
+            show_proof(p, level + 1)
+    else:
+        print("  " * level + "[FACT]")
+
+print("BG CHINMAYI 1WA24CS078")
+print("DERIVED FACTS:")
+result = forward_chaining()
+
+print("\nPROOF:")
+if result:
+    show_proof(("Criminal", "Robert"))
+    print("\nGOAL PROVED!")
+else:
+    print("\nGOAL NOT PROVED!")
+
